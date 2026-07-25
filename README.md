@@ -1,38 +1,27 @@
-# TRELLIS.2 × Babylon.js GLB 查看器
+# AI 游戏开发作业
 
-这个页面使用 Babylon.js 加载并展示 `asset/trellis-sample` 中由 TRELLIS.2
-生成的 GLB 模型。
+这个目录把作业中的 Babylon.js 3D 展示和 Phaser 3 2D 游戏拆成了两个互不干扰的项目：
 
-## 功能
+```text
+project_test_game/
+├── babylon-viewer/  # Babylon.js 加载 TRELLIS 生成的 GLB 模型
+└── phaser3-game/    # Phaser 3 的 2D 游戏学习项目
+```
 
-- GLB 2.0 模型加载
-- 六个模型在线切换
-- ArcRotateCamera 鼠标旋转和滚轮缩放
-- 模型自动居中、统一缩放和落地
-- 环境光、方向光、地面阴影
-- 自动旋转控制
-
-## 本地运行
+## Babylon.js 项目
 
 ```bash
+cd babylon-viewer
 npm install
 npm run dev
 ```
 
-访问终端输出的本地地址。
+## Phaser 3 项目
 
-## 关键代码
-
-模型加载逻辑位于 `app/BabylonViewer.tsx`：
-
-```ts
-const result = await SceneLoader.ImportMeshAsync(
-  null,
-  "",
-  "/models/typical_vehicle_bulldozer.glb",
-  scene,
-);
+```bash
+cd phaser3-game
+npm install
+npm run dev
 ```
 
-Babylon.js 通过 `@babylonjs/loaders/glTF` 注册 GLB/glTF 加载器，再由
-`SceneLoader.ImportMeshAsync` 将文件中的网格、材质和贴图加入当前场景。
+两个项目都有自己的 `package.json` 和依赖，可以分别学习、运行和构建。
