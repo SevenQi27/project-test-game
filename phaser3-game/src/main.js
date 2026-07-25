@@ -24,7 +24,7 @@ class LearningScene extends Phaser.Scene {
       fontFamily: "Arial, sans-serif",
       fontSize: "15px",
       color: "#9ed7c5",
-    });
+    }).setDepth(1);
 
     this.add.grid(480, 270, 960, 540, 48, 48, 0x102522, 1, 0x24443e, 0.45);
 
