@@ -1,11 +1,15 @@
 import assert from "node:assert/strict";
-import { access, readFile, readdir } from "node:fs/promises";
+import { readFile, readdir, stat } from "node:fs/promises";
 import test from "node:test";
 
-const developmentPreviewMeta =
-  /<meta(?=[^>]*\bname=["']codex-preview["'])(?=[^>]*\bcontent=["']development["'])[^>]*>/i;
-const templateRoot = new URL("../", import.meta.url);
-const previewRoot = new URL("../app/_sites-preview/", import.meta.url);
+const expectedModels = [
+  "typical_vehicle_bulldozer.glb",
+  "typical_vehicle_excavator.glb",
+  "typical_vehicle_helicopter.glb",
+  "typical_vehicle_locomotive.glb",
+  "typical_building_building.glb",
+  "typical_misc_crate.glb",
+];
 
 async function render() {
   const workerUrl = new URL("../dist/server/index.js", import.meta.url);
@@ -28,64 +32,49 @@ async function render() {
   );
 }
 
-test("server-renders the starter loading skeleton", async () => {
+test("server-renders the Babylon.js GLB viewer", async () => {
   const response = await render();
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
 
   const html = await response.text();
-  assert.match(html, developmentPreviewMeta);
-  assert.match(html, /<title>Your site is taking shape<\/title>/i);
-  assert.match(html, /Building your site/);
-  assert.match(html, /Your site is taking shape/);
-  assert.match(
-    html,
-    /Your first version will appear here automatically when it’s ready\./,
-  );
-  assert.doesNotMatch(html, /Codex/);
-  assert.match(html, /react-loading-skeleton/);
+  assert.match(html, /<title>TRELLIS × Babylon\.js<\/title>/i);
+  assert.match(html, /<h1>GLB 模型查看器<\/h1>/);
+  assert.match(html, /aria-label="Babylon\.js 3D 模型查看器：推土机"/);
+  assert.match(html, /推土机/);
+  assert.match(html, /挖掘机/);
+  assert.match(html, /直升机/);
+  assert.match(html, /火车头/);
+  assert.match(html, /建筑/);
+  assert.match(html, /货箱/);
+  assert.match(html, /拖拽旋转 · 滚轮缩放/);
   assert.match(html, /role="status"/);
+  assert.doesNotMatch(html, /codex-preview|Your site is taking shape/);
 });
 
-test("keeps the loading skeleton scoped and disposable", async () => {
-  const [preview, css, page, layout, packageJson, files] = await Promise.all([
-    readFile(new URL("SkeletonPreview.tsx", previewRoot), "utf8"),
-    readFile(new URL("preview.css", previewRoot), "utf8"),
-    readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../package.json", import.meta.url), "utf8"),
-    readdir(previewRoot),
-  ]);
+test("packages all six TRELLIS GLB models", async () => {
+  const modelRoot = new URL("../dist/client/models/", import.meta.url);
+  const files = (await readdir(modelRoot))
+    .filter((file) => file.endsWith(".glb"))
+    .sort();
 
-  assert.deepEqual(files.sort(), ["SkeletonPreview.tsx", "preview.css"]);
-  assert.match(preview, /from "react-loading-skeleton"/);
-  assert.match(preview, /baseColor="#eceae7"/);
-  assert.match(preview, /highlightColor="#f9f8f6"/);
-  assert.match(preview, /duration=\{2\.8\}/);
-  assert.match(preview, /sites-skeleton-search-placeholder/);
-  assert.match(packageJson, /"react-loading-skeleton": "3\.5\.0"/);
+  assert.deepEqual(files, [...expectedModels].sort());
 
-  const shellIndex = preview.indexOf('className="sites-skeleton-shell"');
-  const statusIndex = preview.indexOf('className="sites-skeleton-status"');
-  assert.ok(shellIndex >= 0 && statusIndex > shellIndex);
-  assert.match(css, /position:\s*fixed/);
-  assert.match(css, /inset:\s*0/);
-  assert.match(css, /opacity:\s*0\.52/);
-  assert.match(css, /prefers-reduced-motion:\s*reduce/);
-  assert.doesNotMatch(css, /#020617|canvas|pets|progress/i);
-  assert.doesNotMatch(
-    preview,
-    /loading-spinner|status-mark|status-progress|canvas|cookie|random/i,
+  for (const file of expectedModels) {
+    const metadata = await stat(new URL(file, modelRoot));
+    assert.ok(metadata.size > 100_000, `${file} should contain a real GLB model`);
+  }
+});
+
+test("loads models through Babylon SceneLoader", async () => {
+  const source = await readFile(
+    new URL("../app/BabylonViewer.tsx", import.meta.url),
+    "utf8",
   );
 
-  assert.match(page, /export const metadata:\s*Metadata/);
-  assert.match(page, /"codex-preview": "development"/);
-  assert.match(page, /<SkeletonPreview \/>/);
-  assert.match(layout, /title:\s*"Starter Project"/);
-  assert.doesNotMatch(layout, /codex-preview|_sites-preview|themeColor|\bViewport\b/);
-  assert.doesNotMatch(css, /(^|\s)(html|body)\s*\{/m);
-
-  await assert.rejects(
-    access(new URL("public/_sites-preview", templateRoot)),
-  );
+  assert.match(source, /@babylonjs\/loaders\/glTF/);
+  assert.match(source, /SceneLoader\.ImportMeshAsync/);
+  for (const file of expectedModels) {
+    assert.match(source, new RegExp(`/models/${file.replaceAll(".", "\\.")}`));
+  }
 });
