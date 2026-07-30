@@ -25,3 +25,7 @@ npm run dev
 ```
 
 两个项目都有自己的 `package.json` 和依赖，可以分别学习、运行和构建。
+
+## 在线部署
+
+Phaser 游戏通过 GitHub Actions 自动构建，并部署到私有 S3 Bucket 和 CloudFront。基础设施模板和首次部署说明见 [`infra/README.md`](infra/README.md)。

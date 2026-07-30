@@ -1,0 +1,82 @@
+name: Deploy Phaser game
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - phaser3-game/**
+      - infra/**
+      - .github/workflows/deploy-phaser.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: phaser-production
+  cancel-in-progress: true
+
+env:
+  AWS_REGION: us-east-1
+  STACK_NAME: project-test-game
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: phaser3-game/package-lock.json
+
+      - name: Install dependencies
+        working-directory: phaser3-game
+        run: npm ci
+
+      - name: Test and build
+        working-directory: phaser3-game
+        run: npm test
+
+      - name: Configure temporary AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Read deployment targets
+        id: stack
+        run: |
+          bucket_name="$(aws cloudformation describe-stacks \
+            --stack-name "$STACK_NAME" \
+            --query "Stacks[0].Outputs[?OutputKey=='SiteBucketName'].OutputValue" \
+            --output text)"
+          distribution_id="$(aws cloudformation describe-stacks \
+            --stack-name "$STACK_NAME" \
+            --query "Stacks[0].Outputs[?OutputKey=='DistributionId'].OutputValue" \
+            --output text)"
+          echo "bucket_name=$bucket_name" >> "$GITHUB_OUTPUT"
+          echo "distribution_id=$distribution_id" >> "$GITHUB_OUTPUT"
+
+      - name: Upload game assets
+        run: |
+          aws s3 sync phaser3-game/dist/ "s3://${{ steps.stack.outputs.bucket_name }}/" \
+            --delete \
+            --exclude index.html \
+            --cache-control "public,max-age=3600"
+          aws s3 cp phaser3-game/dist/index.html \
+            "s3://${{ steps.stack.outputs.bucket_name }}/index.html" \
+            --content-type text/html \
+            --cache-control "no-cache,no-store,must-revalidate"
+
+      - name: Refresh CloudFront cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id "${{ steps.stack.outputs.distribution_id }}" \
+            --paths '/*'
