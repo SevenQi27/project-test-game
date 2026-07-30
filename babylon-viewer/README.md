@@ -21,6 +21,18 @@ npm run dev
 
 访问终端输出的本地地址。
 
+## AWS 在线地址
+
+<https://d1hy0fie0bnfbl.cloudfront.net/babylon/index.html>
+
+AWS 使用独立的静态 Vite 构建：
+
+```bash
+npm run test:aws
+```
+
+整个项目的上传和 CloudFront 缓存刷新由根目录的 `infra/deploy.sh` 完成。
+
 ## 关键代码
 
 模型加载逻辑位于 `app/BabylonViewer.tsx`：

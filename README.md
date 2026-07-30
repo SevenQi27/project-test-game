@@ -28,4 +28,7 @@ npm run dev
 
 ## 在线部署
 
-Phaser 游戏通过本机脚本手动构建，并部署到私有 S3 Bucket 和 CloudFront。基础设施模板和部署说明见 [`infra/README.md`](infra/README.md)。
+Phaser 游戏和 Babylon 模型查看器都通过本机脚本手动构建，并部署到私有 S3 Bucket 和 CloudFront。基础设施模板和部署说明见 [`infra/README.md`](infra/README.md)。
+
+- Phaser 3《深塔试炼》：<https://d1hy0fie0bnfbl.cloudfront.net/>
+- Babylon.js GLB 模型查看器：<https://d1hy0fie0bnfbl.cloudfront.net/babylon/index.html>

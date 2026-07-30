@@ -75,6 +75,6 @@ test("loads models through Babylon SceneLoader", async () => {
   assert.match(source, /@babylonjs\/loaders\/glTF/);
   assert.match(source, /SceneLoader\.ImportMeshAsync/);
   for (const file of expectedModels) {
-    assert.match(source, new RegExp(`/models/${file.replaceAll(".", "\\.")}`));
+    assert.match(source, new RegExp(`models/${file.replaceAll(".", "\\.")}`));
   }
 });

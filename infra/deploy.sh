@@ -31,6 +31,8 @@ site_url="$(aws cloudformation describe-stacks \
   --output text)"
 npm ci --prefix "${project_dir}/phaser3-game"
 npm test --prefix "${project_dir}/phaser3-game"
+npm ci --prefix "${project_dir}/babylon-viewer"
+npm run test:aws --prefix "${project_dir}/babylon-viewer"
 
 aws s3 sync \
   "${project_dir}/phaser3-game/dist/" \
@@ -38,6 +40,7 @@ aws s3 sync \
   --region "${AWS_REGION}" \
   --delete \
   --exclude index.html \
+  --exclude 'babylon/*' \
   --cache-control "public,max-age=3600"
 
 aws s3 cp \
@@ -47,8 +50,24 @@ aws s3 cp \
   --content-type text/html \
   --cache-control "no-cache,no-store,must-revalidate"
 
+aws s3 sync \
+  "${project_dir}/babylon-viewer/dist-aws/" \
+  "s3://${site_bucket}/babylon/" \
+  --region "${AWS_REGION}" \
+  --delete \
+  --exclude index.html \
+  --cache-control "public,max-age=3600"
+
+aws s3 cp \
+  "${project_dir}/babylon-viewer/dist-aws/index.html" \
+  "s3://${site_bucket}/babylon/index.html" \
+  --region "${AWS_REGION}" \
+  --content-type text/html \
+  --cache-control "no-cache,no-store,must-revalidate"
+
 aws cloudfront create-invalidation \
   --distribution-id "${distribution_id}" \
   --paths '/*' >/dev/null
 
 printf 'Site URL: %s\n' "${site_url}"
+printf 'Babylon URL: %s/babylon/index.html\n' "${site_url}"
