@@ -28,4 +28,4 @@ npm run dev
 
 ## 在线部署
 
-Phaser 游戏通过 GitHub Actions 自动构建，并部署到私有 S3 Bucket 和 CloudFront。基础设施模板和首次部署说明见 [`infra/README.md`](infra/README.md)。
+Phaser 游戏通过本机脚本手动构建，并部署到私有 S3 Bucket 和 CloudFront。基础设施模板和部署说明见 [`infra/README.md`](infra/README.md)。

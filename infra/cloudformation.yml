@@ -1,24 +1,6 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: Private S3 and CloudFront hosting for the Phaser 3 game.
 
-Parameters:
-  GitHubRepository:
-    Type: String
-    Default: SevenQi27/project-test-game
-    Description: GitHub repository in owner/name format.
-  GitHubBranch:
-    Type: String
-    Default: main
-    Description: Branch allowed to assume the deployment role.
-  ExistingGitHubOidcProviderArn:
-    Type: String
-    Default: ""
-    Description: Existing GitHub Actions OIDC provider ARN, if the account already has one.
-
-Conditions:
-  HasExistingGitHubOidcProvider: !Not [!Equals [!Ref ExistingGitHubOidcProviderArn, ""]]
-  CreateGitHubOidcProvider: !Equals [!Ref ExistingGitHubOidcProviderArn, ""]
-
 Resources:
   SiteBucket:
     Type: AWS::S3::Bucket
@@ -105,59 +87,6 @@ Resources:
               StringEquals:
                 AWS:SourceArn: !Sub arn:${AWS::Partition}:cloudfront::${AWS::AccountId}:distribution/${SiteDistribution}
 
-  GitHubOidcProvider:
-    Type: AWS::IAM::OIDCProvider
-    Condition: CreateGitHubOidcProvider
-    Properties:
-      Url: https://token.actions.githubusercontent.com
-      ClientIdList:
-        - sts.amazonaws.com
-
-  GitHubDeployRole:
-    Type: AWS::IAM::Role
-    Properties:
-      RoleName: !Sub ${AWS::StackName}-github-deploy
-      Description: Least-privilege deployment role for the Phaser GitHub Actions workflow.
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              Federated: !If
-                - HasExistingGitHubOidcProvider
-                - !Ref ExistingGitHubOidcProviderArn
-                - !Ref GitHubOidcProvider
-            Action: sts:AssumeRoleWithWebIdentity
-            Condition:
-              StringEquals:
-                "token.actions.githubusercontent.com:aud": sts.amazonaws.com
-                "token.actions.githubusercontent.com:sub": !Sub repo:${GitHubRepository}:ref:refs/heads/${GitHubBranch}
-      Policies:
-        - PolicyName: DeployPhaserSite
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Sid: ListDeploymentBucket
-                Effect: Allow
-                Action:
-                  - s3:GetBucketLocation
-                  - s3:ListBucket
-                Resource: !GetAtt SiteBucket.Arn
-              - Sid: UpdateDeploymentObjects
-                Effect: Allow
-                Action:
-                  - s3:DeleteObject
-                  - s3:PutObject
-                Resource: !Sub ${SiteBucket.Arn}/*
-              - Sid: ReadDeploymentStack
-                Effect: Allow
-                Action: cloudformation:DescribeStacks
-                Resource: !Sub arn:${AWS::Partition}:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/${AWS::StackName}/*
-              - Sid: InvalidateSiteCache
-                Effect: Allow
-                Action: cloudfront:CreateInvalidation
-                Resource: !Sub arn:${AWS::Partition}:cloudfront::${AWS::AccountId}:distribution/${SiteDistribution}
-
 Outputs:
   SiteBucketName:
     Description: Private bucket receiving the Phaser build output.
@@ -168,6 +97,3 @@ Outputs:
   SiteUrl:
     Description: Public HTTPS URL of the Phaser game.
     Value: !Sub https://${SiteDistribution.DomainName}
-  GitHubDeployRoleArn:
-    Description: Set this ARN as the GitHub Actions variable AWS_ROLE_ARN.
-    Value: !GetAtt GitHubDeployRole.Arn
