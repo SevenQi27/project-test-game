@@ -1,20 +1,25 @@
-# 数据核心保卫战
+# 深塔试炼：Phaser 3 迷你魔塔
 
-使用 Phaser 3.90.0 和 Vite 制作的完整 2D 街机小游戏，也是作业中“做一款
-Phaser 2D 游戏”的实现。
+这是作业中“使用 Phaser 制作一款 2D 游戏”的完整版本。游戏采用原创三层地图和
+像素美术，实现经典魔塔式的格子移动、钥匙与门、数值战斗、属性成长和楼层探索。
 
 ## 游戏目标
 
-在 55 秒内收集 8 枚绿色数据芯片。收集完成后，右下角会开启传送门；在生命值
-归零或倒计时结束前进入传送门即可获胜。
+从第一层入口出发，在第三层击败“高塔领主”。你需要先观察地图和怪物战损，再决定：
+
+- 哪个怪物值得先打；
+- 钥匙应该开哪一扇门；
+- 先拿攻击宝石还是防御宝石；
+- 金币在商店购买生命、攻击还是防御。
 
 ## 操作
 
-- 方向键或 `WASD`：移动
-- `SPACE`：冲刺，冲刺期间可以击毁病毒
-- `P`：暂停或继续
-- `ENTER`：开始游戏或重新开始
-- `M`：结算界面返回主菜单
+- 方向键或 `WASD`：移动一格
+- `H`：打开或关闭怪物图鉴，查看预计战损
+- `Q`：保存当前进度
+- `L`：读取上次存档
+- `1 / 2 / 3`：在商店购买生命、攻击或防御
+- `ESC`：关闭图鉴或离开商店
 
 ## 运行
 
@@ -23,35 +28,68 @@ npm install
 npm run dev
 ```
 
+测试与生产构建：
+
+```bash
+npm test
+```
+
 ## 代码结构
 
 ```text
 src/
-├── main.js                 # Phaser.Game 配置和 Scene 注册
-├── game/
-│   ├── constants.js       # 尺寸、时间、颜色等公共配置
-│   └── ui.js              # 背景、按钮和文本等公共方法
+├── main.js                       # Phaser.Game 配置和 Scene 注册
+├── tower/
+│   ├── constants.js             # 画布、地图尺寸、初始属性和符号说明
+│   ├── maps.js                  # 三层 11×11 字符地图
+│   ├── enemies.js               # 怪物数值表
+│   ├── rules.js                 # 战斗、道具和商店纯函数
+│   └── ui.js                    # 通用按钮
 └── scenes/
-    ├── BootScene.js        # preload 生命周期和代码生成贴图
-    ├── MenuScene.js        # 开始界面
-    ├── GameScene.js        # 移动、碰撞、计时、敌人和胜负规则
-    └── ResultScene.js      # 结算、最高分和重新开始
+    ├── TowerBootScene.js        # preload 与像素贴图生成
+    ├── TowerMenuScene.js        # 开始和继续游戏
+    ├── TowerGameScene.js        # 地图、移动、交互、存档和图鉴
+    └── TowerResultScene.js      # 通关结局
 ```
 
-## 建议学习顺序
+## 地图数据怎么读
 
-1. 从 `main.js` 看 Phaser 如何注册和启动多个 Scene。
-2. 看 `BootScene.js` 的 `preload` 和 `create`，理解资源准备阶段。
-3. 看 `GameScene.js` 的 `create`，理解游戏对象、物理组、碰撞和计时器。
-4. 看 `GameScene.js` 的 `update`，理解每一帧如何读取输入和追踪玩家。
-5. 最后看 `MenuScene.js` 和 `ResultScene.js`，理解 Scene 之间如何传递数据。
+`src/tower/maps.js` 用字符代表地图内容：
 
-## 已实现的 Phaser 知识点
+| 字符 | 含义 | 字符 | 含义 |
+| --- | --- | --- | --- |
+| `#` | 墙 | `.` | 地板 |
+| `Y/B/R` | 黄门、蓝门、红门 | `y/b/r` | 三种钥匙 |
+| `p/P` | 红药水、蓝药水 | `a/d` | 攻击、防御宝石 |
+| `m/g/k/K/M/X` | 六种怪物 | `s` | 商人 |
+| `U/D` | 上楼、下楼 | `@` | 初始位置 |
 
-- Scene 生命周期与 Scene 切换
-- Arcade Physics、世界边界和 Overlap 碰撞
-- Keyboard 输入和 `JustDown`
-- Group 管理多个游戏对象
-- Time Event 定时生成敌人和倒计时
-- Tween、Camera Shake、Camera Flash 等反馈效果
-- 本地最高分保存
+例如，想移动一面墙或添加一只怪物，只需要修改对应字符串里的字符。
+
+## 战斗规则
+
+战斗是即时结算的回合制数值计算：
+
+```text
+勇者每次伤害 = 勇者攻击 - 怪物防御
+怪物每次伤害 = max(怪物攻击 - 勇者防御, 0)
+预计损伤 = 怪物每次伤害 × (勇者攻击回合数 - 1)
+```
+
+如果勇者无法破防，或者预计损伤大于当前生命，游戏会阻止这次战斗。
+
+## 这版涉及的 Phaser 知识点
+
+- 多 Scene 生命周期与数据传递
+- `preload` 加载封面资源
+- Graphics 动态生成像素贴图
+- 数据驱动的瓦片地图渲染
+- 键盘与指针输入
+- Tween、Camera Shake、Camera Flash
+- Container 管理图鉴和商店弹层
+- `localStorage` 存档与读档
+- 游戏规则纯函数与 Node 单元测试
+
+主菜单封面由 OpenAI 内置图像生成工具创建，提示词采用“原创 16-bit 像素风高塔入口，
+无文字、无 Logo、无现成游戏角色”，最终资源保存在
+`public/assets/magic-tower-cover.png`。

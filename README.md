@@ -5,7 +5,7 @@
 ```text
 project_test_game/
 ├── babylon-viewer/  # Babylon.js 加载 TRELLIS 生成的 GLB 模型
-└── phaser3-game/    # Phaser 3 完整游戏《数据核心保卫战》
+└── phaser3-game/    # Phaser 3 三层迷你魔塔《深塔试炼》
 ```
 
 ## Babylon.js 项目

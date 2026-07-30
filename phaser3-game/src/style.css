@@ -2,8 +2,8 @@
   font-family:
     Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
     sans-serif;
-  color: #f6f2e7;
-  background: #050d0c;
+  color: #f3ead8;
+  background: #05080c;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
 }
@@ -18,20 +18,20 @@ body {
   min-height: 100vh;
   overflow-x: hidden;
   background:
-    radial-gradient(circle at 22% 12%, rgba(43, 112, 93, 0.3), transparent 32rem),
-    radial-gradient(circle at 82% 88%, rgba(166, 105, 38, 0.14), transparent 28rem),
-    #050d0c;
+    radial-gradient(circle at 18% 12%, rgba(43, 76, 91, 0.34), transparent 34rem),
+    radial-gradient(circle at 82% 86%, rgba(133, 84, 34, 0.18), transparent 30rem),
+    #05080c;
 }
 
 .page-shell {
   display: grid;
   min-height: 100vh;
   place-items: center;
-  padding: 18px 24px 22px;
+  padding: 14px 20px 20px;
 }
 
 .game-panel {
-  width: min(100%, 1020px);
+  width: min(100%, 1000px);
 }
 
 .page-header {
@@ -39,52 +39,48 @@ body {
   align-items: end;
   justify-content: space-between;
   gap: 28px;
-  width: min(100%, calc(72vh * 16 / 9));
+  width: min(100%, calc(78vh * 1.5));
   max-width: 960px;
-  margin: 0 auto 15px;
+  margin: 0 auto 12px;
 }
 
 .eyebrow {
-  margin: 0 0 7px;
-  color: #f2bd5a;
+  margin: 0 0 5px;
+  color: #e7b85d;
   font-size: 10px;
   font-weight: 800;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.22em;
 }
 
 h1 {
   margin: 0;
-  font-size: clamp(26px, 4vw, 43px);
+  font-size: clamp(25px, 3.6vw, 40px);
   line-height: 1;
   white-space: nowrap;
 }
 
 .intro {
-  max-width: 420px;
+  max-width: 500px;
   margin: 0;
-  color: #9db8b0;
+  color: #91a0a8;
   font-size: 13px;
   line-height: 1.65;
   text-align: right;
 }
 
-code {
-  color: #7de2c4;
-}
-
 #game-container {
-  width: min(100%, calc(72vh * 16 / 9));
+  width: min(100%, calc(78vh * 1.5));
   max-width: 960px;
-  max-height: 72vh;
+  max-height: 78vh;
   margin: 0 auto;
   overflow: hidden;
-  aspect-ratio: 16 / 9;
-  border: 1px solid rgba(125, 226, 196, 0.35);
-  border-radius: 16px;
-  background: #071314;
+  aspect-ratio: 3 / 2;
+  border: 1px solid rgba(231, 184, 93, 0.38);
+  border-radius: 10px;
+  background: #080d13;
   box-shadow:
-    0 30px 90px rgba(0, 0, 0, 0.48),
-    0 0 45px rgba(68, 167, 139, 0.08);
+    0 30px 100px rgba(0, 0, 0, 0.58),
+    0 0 45px rgba(188, 133, 48, 0.08);
 }
 
 #game-container canvas {
@@ -94,7 +90,7 @@ code {
 @media (max-width: 720px) {
   .page-shell {
     align-items: start;
-    padding: 18px 10px;
+    padding: 14px 8px;
   }
 
   .page-header {
@@ -103,13 +99,13 @@ code {
   }
 
   .intro {
-    margin-top: 10px;
+    margin-top: 8px;
     text-align: left;
   }
 
   #game-container {
     width: 100%;
     max-height: none;
-    border-radius: 10px;
+    border-radius: 6px;
   }
 }
