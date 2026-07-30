@@ -32,21 +32,27 @@ async function render() {
   );
 }
 
-test("server-renders the Babylon.js GLB viewer", async () => {
+test("server-renders the Babylon.js construction site", async () => {
   const response = await render();
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
 
   const html = await response.text();
-  assert.match(html, /<title>TRELLIS × Babylon\.js<\/title>/i);
-  assert.match(html, /<h1>GLB 模型查看器<\/h1>/);
-  assert.match(html, /aria-label="Babylon\.js 3D 模型查看器：推土机"/);
+  assert.match(html, /<title>TRELLIS 施工场区 × Babylon\.js<\/title>/i);
+  assert.match(html, /<h1>自动化施工场区<\/h1>/);
+  assert.match(html, /aria-label="Babylon\.js 3D 施工场区"/);
+  assert.match(html, /施工场区/);
+  assert.match(html, /单模型/);
   assert.match(html, /推土机/);
   assert.match(html, /挖掘机/);
   assert.match(html, /直升机/);
   assert.match(html, /火车头/);
-  assert.match(html, /建筑/);
-  assert.match(html, /货箱/);
+  assert.match(html, /道路、铁路、停机坪由 Babylon\.js 生成/);
+  assert.match(html, /暂停运动/);
+  assert.match(html, /速度/);
+  assert.match(html, /1<!-- -->×/);
+  assert.match(html, /全景/);
+  assert.match(html, /俯瞰/);
   assert.match(html, /拖拽旋转 · 滚轮缩放/);
   assert.match(html, /role="status"/);
   assert.doesNotMatch(html, /codex-preview|Your site is taking shape/);
@@ -66,15 +72,25 @@ test("packages all six TRELLIS GLB models", async () => {
   }
 });
 
-test("loads models through Babylon SceneLoader", async () => {
-  const source = await readFile(
-    new URL("../app/BabylonViewer.tsx", import.meta.url),
-    "utf8",
-  );
+test("loads all models and defines automatic movement routes", async () => {
+  const [catalogSource, siteSource] = await Promise.all([
+    readFile(new URL("../app/modelCatalog.ts", import.meta.url), "utf8"),
+    readFile(
+      new URL("../app/world/createConstructionSite.ts", import.meta.url),
+      "utf8",
+    ),
+  ]);
 
-  assert.match(source, /@babylonjs\/loaders\/glTF/);
-  assert.match(source, /SceneLoader\.ImportMeshAsync/);
+  assert.match(siteSource, /SceneLoader\.ImportMeshAsync/);
+  assert.match(siteSource, /createRouteController/);
+  assert.match(siteSource, /helicopterAngle/);
+  assert.match(siteSource, /constructionGround/);
+  assert.match(siteSource, /helipad/);
+  assert.match(siteSource, /railSleeper/);
   for (const file of expectedModels) {
-    assert.match(source, new RegExp(`models/${file.replaceAll(".", "\\.")}`));
+    assert.match(
+      catalogSource,
+      new RegExp(`models/${file.replaceAll(".", "\\.")}`),
+    );
   }
 });

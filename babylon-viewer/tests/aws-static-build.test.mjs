@@ -17,7 +17,7 @@ test("builds an AWS static entry under the Babylon base path", async () => {
     "utf8",
   );
 
-  assert.match(html, /<title>TRELLIS × Babylon\.js<\/title>/);
+  assert.match(html, /<title>TRELLIS 施工场区 × Babylon\.js<\/title>/);
   assert.match(html, /src="\/babylon\/assets\/[^\"]+\.js"/);
   assert.match(html, /href="\/babylon\/assets\/[^\"]+\.css"/);
 });

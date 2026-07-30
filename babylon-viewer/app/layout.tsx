@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "TRELLIS × Babylon.js",
-  description: "在浏览器中查看 TRELLIS.2 生成的 GLB 模型。",
+  title: "TRELLIS 施工场区 × Babylon.js",
+  description: "在 Babylon.js 施工场区中查看自动运行的 TRELLIS.2 GLB 模型。",
 };
 
 export default function RootLayout({
